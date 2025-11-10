@@ -30,15 +30,27 @@ const GameCanvas = ({ gameState, onGameOver, isPaused, onScoreUpdate }: GameCanv
     const updateDimensions = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        const size = Math.min(rect.width, rect.height - 200);
+        const size = Math.max(280, Math.min(rect.width - 32, rect.height - 200));
         setDimensions({ width: size, height: size });
       }
     };
 
-    updateDimensions();
+    // Small delay to ensure container is rendered
+    const timer = setTimeout(updateDimensions, 50);
     window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateDimensions);
+    };
   }, []);
+
+  if (dimensions.width === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="font-pixel text-primary animate-pulse">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div

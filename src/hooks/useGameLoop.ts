@@ -67,7 +67,7 @@ export const useGameLoop = (
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || gameState !== "playing" || isPaused) return;
+    if (!canvas || gameState !== "playing" || isPaused || dimensions.width === 0) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -153,10 +153,11 @@ export const useGameLoop = (
       // Draw apple
       ctx.fillStyle = "#ff3b30";
       ctx.beginPath();
+      const appleRadius = Math.max(2, cellSize / 2 - 2);
       ctx.arc(
         apple.x * cellSize + cellSize / 2,
         apple.y * cellSize + cellSize / 2,
-        cellSize / 2 - 2,
+        appleRadius,
         0,
         Math.PI * 2
       );
