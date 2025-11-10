@@ -31,11 +31,11 @@ const Index = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-background overflow-hidden touch-none">
+    <div className="fixed inset-0 bg-background overflow-hidden touch-none no-select">
       {screen === "home" && <HomeScreen onStart={handleStartGame} />}
       
       {screen === "playing" && (
-        <>
+        <div className="h-full w-full flex flex-col relative">
           <GameUI
             score={game.score}
             highScore={game.highScore}
@@ -45,13 +45,15 @@ const Index = () => {
             isMuted={game.isMuted}
             onHome={handleBackHome}
           />
-          <GameCanvas
-            gameState={game.gameState}
-            onGameOver={handleGameOver}
-            isPaused={game.isPaused}
-            onScoreUpdate={game.updateScore}
-          />
-        </>
+          <div className="flex-1 overflow-hidden">
+            <GameCanvas
+              gameState={game.gameState}
+              onGameOver={handleGameOver}
+              isPaused={game.isPaused}
+              onScoreUpdate={game.updateScore}
+            />
+          </div>
+        </div>
       )}
 
       {screen === "gameover" && (

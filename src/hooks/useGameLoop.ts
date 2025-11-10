@@ -5,6 +5,9 @@ const BASE_TICK_MS = 180;
 const TICK_FLOOR_MS = 80;
 const TICK_DELTA_MS = 4;
 
+// Initial snake length (2-3 segments for classic Snake feel)
+const INITIAL_SNAKE_LENGTH = 3;
+
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
 type Position = { x: number; y: number };
 
@@ -17,8 +20,8 @@ export const useGameLoop = (
   dimensions: { width: number; height: number }
 ) => {
   const [direction, setDirection] = useState<Direction>("RIGHT");
-  const [snake, setSnake] = useState<Position[]>([{ x: 7, y: 7 }]);
-  const [apple, setApple] = useState<Position>({ x: 10, y: 7 });
+  const [snake, setSnake] = useState<Position[]>([]);
+  const [apple, setApple] = useState<Position>({ x: 0, y: 0 });
   const [score, setScore] = useState(0);
   const lastUpdateRef = useRef<number>(0);
   const animationFrameRef = useRef<number>();
@@ -26,7 +29,46 @@ export const useGameLoop = (
 
   const cellSize = dimensions.width / GRID_SIZE;
 
-  const spawnApple = (currentSnake: Position[]) => {
+  // Initialize game state: snake in center with 2-3 segments, apple in random free cell
+  const initializeGame = (): { snake: Position[]; apple: Position; direction: Direction } => {
+    // Start snake in center of grid, facing right
+    const centerX = Math.floor(GRID_SIZE / 2);
+    const centerY = Math.floor(GRID_SIZE / 2);
+    
+    // Create initial snake with INITIAL_SNAKE_LENGTH segments, moving right
+    const initialSnake: Position[] = [];
+    for (let i = 0; i < INITIAL_SNAKE_LENGTH; i++) {
+      initialSnake.push({ x: centerX - i, y: centerY });
+    }
+    
+    // Spawn apple in a random free cell
+    const freeCells: Position[] = [];
+    for (let x = 0; x < GRID_SIZE; x++) {
+      for (let y = 0; y < GRID_SIZE; y++) {
+        if (!initialSnake.some((s) => s.x === x && s.y === y)) {
+          freeCells.push({ x, y });
+        }
+      }
+    }
+    
+    let initialApple: Position;
+    if (freeCells.length > 0) {
+      const randomIndex = Math.floor(Math.random() * freeCells.length);
+      initialApple = freeCells[randomIndex];
+    } else {
+      // Fallback (shouldn't happen with proper grid size)
+      initialApple = { x: 10, y: 7 };
+    }
+    
+    return {
+      snake: initialSnake,
+      apple: initialApple,
+      direction: "RIGHT",
+    };
+  };
+
+  // Spawn apple at a random empty cell (not occupied by snake)
+  const spawnApple = (currentSnake: Position[]): Position => {
     const freeCells: Position[] = [];
     for (let x = 0; x < GRID_SIZE; x++) {
       for (let y = 0; y < GRID_SIZE; y++) {
@@ -35,39 +77,54 @@ export const useGameLoop = (
         }
       }
     }
+    
     if (freeCells.length > 0) {
       const randomIndex = Math.floor(Math.random() * freeCells.length);
       return freeCells[randomIndex];
     }
-    return { x: 10, y: 7 };
+    
+    // Fallback: return a default position (shouldn't happen in normal gameplay)
+    return { x: 0, y: 0 };
   };
 
-  const checkCollision = (head: Position, body: Position[]): boolean => {
+  // Check if head collides with walls or body segments
+  // Checks wall boundaries and self-collision with body (excluding tail which will be removed)
+  const checkCollision = (head: Position, snakeBody: Position[]): boolean => {
+    // Check wall collision: head outside grid bounds
     if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
       return true;
     }
-    return body.some((segment) => segment.x === head.x && segment.y === head.y);
+    
+    // Check self-collision: head collides with any body segment
+    // Exclude the tail since it will be removed on the next move (unless apple is eaten)
+    // For collision check, we check against all segments except the tail
+    const bodyWithoutTail = snakeBody.slice(0, -1);
+    return bodyWithoutTail.some((segment) => segment.x === head.x && segment.y === head.y);
   };
 
+  // Calculate game speed based on score (increases difficulty)
   const getCurrentTickSpeed = (currentScore: number): number => {
     const reduction = currentScore * TICK_DELTA_MS;
     return Math.max(TICK_FLOOR_MS, BASE_TICK_MS - reduction);
   };
 
+  // Initialize game when state changes to "playing"
   useEffect(() => {
     if (gameState === "playing") {
-      setDirection("RIGHT");
-      setSnake([{ x: 7, y: 7 }]);
-      setApple({ x: 10, y: 7 });
+      const initialState = initializeGame();
+      setDirection(initialState.direction);
+      setSnake(initialState.snake);
+      setApple(initialState.apple);
       setScore(0);
       onScoreUpdate(0);
       inputBufferRef.current = [];
+      lastUpdateRef.current = 0;
     }
   }, [gameState, onScoreUpdate]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || gameState !== "playing" || isPaused || dimensions.width === 0) return;
+    if (!canvas || gameState !== "playing" || isPaused || dimensions.width === 0 || snake.length === 0) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -78,12 +135,12 @@ export const useGameLoop = (
       if (timestamp - lastUpdateRef.current >= currentTickSpeed) {
         lastUpdateRef.current = timestamp;
 
+        // === STEP 1: Get player input (direction) ===
         // Process input buffer with 180-degree turn prevention
         let nextDirection = direction;
         if (inputBufferRef.current.length > 0) {
           const bufferedDirection = inputBufferRef.current.shift()!;
-          console.log("Processing buffered direction:", bufferedDirection, "Current direction:", direction);
-          // Prevent 180-degree turns
+          // Prevent 180-degree turns (direct reversal)
           const isOpposite = 
             (direction === "UP" && bufferedDirection === "DOWN") ||
             (direction === "DOWN" && bufferedDirection === "UP") ||
@@ -92,12 +149,10 @@ export const useGameLoop = (
           
           if (!isOpposite) {
             nextDirection = bufferedDirection;
-            console.log("Direction changed to:", nextDirection);
-          } else {
-            console.log("180-degree turn blocked");
           }
         }
         
+        // === STEP 2: Move snake's head one cell forward in current direction ===
         const currentHead = snake[0];
         let newHead: Position;
 
@@ -116,24 +171,41 @@ export const useGameLoop = (
             break;
         }
 
+        // === STEP 3: Check for collision BEFORE updating snake ===
+        // If collision detected, end game immediately
         if (checkCollision(newHead, snake)) {
           onGameOver();
-          return;
+          return; // Exit game loop
         }
 
-        const newSnake = [newHead, ...snake];
+        // === STEP 4: Check if snake's head enters a cell with the apple ===
+        const ateApple = newHead.x === apple.x && newHead.y === apple.y;
+
+        // === STEP 5: Update snake based on whether apple was eaten ===
+        let newSnake: Position[];
         
-        if (newHead.x === apple.x && newHead.y === apple.y) {
+        if (ateApple) {
+          // Apple eaten: DO NOT remove tail (snake grows by 1 segment)
+          // Prepend new head to snake body - this increases length
+          newSnake = [newHead, ...snake];
+          
+          // Increase score by 1
           const newScore = score + 1;
           setScore(newScore);
           onScoreUpdate(newScore);
-          setApple(spawnApple(newSnake));
-          setSnake(newSnake);
+          
+          // Move apple to a new random empty cell (not occupied by snake)
+          const newApple = spawnApple(newSnake);
+          setApple(newApple);
         } else {
-          newSnake.pop();
-          setSnake(newSnake);
+          // No apple eaten: remove tail segment (snake does not grow)
+          // Prepend new head and remove tail to maintain same length
+          newSnake = [newHead, ...snake];
+          newSnake.pop(); // Remove tail to keep same length
         }
 
+        // === STEP 6: Update game state and continue game loop ===
+        setSnake(newSnake);
         setDirection(nextDirection);
       }
 
@@ -204,12 +276,8 @@ export const useGameLoop = (
   ]);
 
   const handleDirectionChange = (newDirection: Direction) => {
-    console.log("Direction change requested:", newDirection, "Current buffer:", inputBufferRef.current);
     if (inputBufferRef.current.length < 2) {
       inputBufferRef.current.push(newDirection);
-      console.log("Added to buffer. New buffer:", inputBufferRef.current);
-    } else {
-      console.log("Buffer full, ignored");
     }
   };
 
