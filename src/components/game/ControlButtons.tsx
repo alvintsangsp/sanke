@@ -3,20 +3,10 @@ import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 
 interface ControlButtonsProps {
   onDirectionChange: (direction: "UP" | "DOWN" | "LEFT" | "RIGHT") => void;
-  currentDirection: "UP" | "DOWN" | "LEFT" | "RIGHT";
 }
 
-const ControlButtons = ({ onDirectionChange, currentDirection }: ControlButtonsProps) => {
+const ControlButtons = ({ onDirectionChange }: ControlButtonsProps) => {
   const handleDirection = (newDirection: "UP" | "DOWN" | "LEFT" | "RIGHT") => {
-    // Prevent 180-degree turns
-    if (
-      (currentDirection === "UP" && newDirection === "DOWN") ||
-      (currentDirection === "DOWN" && newDirection === "UP") ||
-      (currentDirection === "LEFT" && newDirection === "RIGHT") ||
-      (currentDirection === "RIGHT" && newDirection === "LEFT")
-    ) {
-      return;
-    }
     onDirectionChange(newDirection);
   };
 

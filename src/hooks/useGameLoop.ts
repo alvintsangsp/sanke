@@ -78,8 +78,21 @@ export const useGameLoop = (
       if (timestamp - lastUpdateRef.current >= currentTickSpeed) {
         lastUpdateRef.current = timestamp;
 
-        // Process input buffer
-        const nextDirection = inputBufferRef.current.shift() || direction;
+        // Process input buffer with 180-degree turn prevention
+        let nextDirection = direction;
+        if (inputBufferRef.current.length > 0) {
+          const bufferedDirection = inputBufferRef.current.shift()!;
+          // Prevent 180-degree turns
+          const isOpposite = 
+            (direction === "UP" && bufferedDirection === "DOWN") ||
+            (direction === "DOWN" && bufferedDirection === "UP") ||
+            (direction === "LEFT" && bufferedDirection === "RIGHT") ||
+            (direction === "RIGHT" && bufferedDirection === "LEFT");
+          
+          if (!isOpposite) {
+            nextDirection = bufferedDirection;
+          }
+        }
         
         const currentHead = snake[0];
         let newHead: Position;

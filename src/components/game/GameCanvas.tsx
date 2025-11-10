@@ -69,7 +69,7 @@ const GameCanvas = ({ gameState, onGameOver, isPaused, onScoreUpdate }: GameCanv
           touchAction: "none",
         }}
       />
-      <ControlButtons onDirectionChange={setDirection} currentDirection={direction} />
+      <ControlButtons onDirectionChange={setDirection} />
     </div>
   );
 };
