@@ -32,25 +32,27 @@ const GameCanvas = ({ gameState, onGameOver, isPaused, onScoreUpdate }: GameCanv
         const rect = containerRef.current.getBoundingClientRect();
         const size = Math.max(280, Math.min(rect.width - 32, rect.height - 200));
         setDimensions({ width: size, height: size });
+      } else {
+        // Fallback if container not ready
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const size = Math.max(280, Math.min(viewportWidth - 32, viewportHeight - 200));
+        setDimensions({ width: size, height: size });
       }
     };
 
-    // Small delay to ensure container is rendered
-    const timer = setTimeout(updateDimensions, 50);
+    // Immediate first call
+    updateDimensions();
+    
+    // Also try after a brief delay in case layout isn't complete
+    const timer = setTimeout(updateDimensions, 100);
+    
     window.addEventListener("resize", updateDimensions);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("resize", updateDimensions);
     };
   }, []);
-
-  if (dimensions.width === 0) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="font-pixel text-primary animate-pulse">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div
