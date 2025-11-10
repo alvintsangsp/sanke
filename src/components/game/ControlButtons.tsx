@@ -7,6 +7,7 @@ interface ControlButtonsProps {
 
 const ControlButtons = ({ onDirectionChange }: ControlButtonsProps) => {
   const handleDirection = (newDirection: "UP" | "DOWN" | "LEFT" | "RIGHT") => {
+    console.log("Button clicked:", newDirection);
     onDirectionChange(newDirection);
   };
 

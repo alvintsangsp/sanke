@@ -82,6 +82,7 @@ export const useGameLoop = (
         let nextDirection = direction;
         if (inputBufferRef.current.length > 0) {
           const bufferedDirection = inputBufferRef.current.shift()!;
+          console.log("Processing buffered direction:", bufferedDirection, "Current direction:", direction);
           // Prevent 180-degree turns
           const isOpposite = 
             (direction === "UP" && bufferedDirection === "DOWN") ||
@@ -91,6 +92,9 @@ export const useGameLoop = (
           
           if (!isOpposite) {
             nextDirection = bufferedDirection;
+            console.log("Direction changed to:", nextDirection);
+          } else {
+            console.log("180-degree turn blocked");
           }
         }
         
@@ -200,8 +204,12 @@ export const useGameLoop = (
   ]);
 
   const handleDirectionChange = (newDirection: Direction) => {
+    console.log("Direction change requested:", newDirection, "Current buffer:", inputBufferRef.current);
     if (inputBufferRef.current.length < 2) {
       inputBufferRef.current.push(newDirection);
+      console.log("Added to buffer. New buffer:", inputBufferRef.current);
+    } else {
+      console.log("Buffer full, ignored");
     }
   };
 
