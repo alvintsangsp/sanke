@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
 const GRID_SIZE = 15;
-const BASE_TICK_MS = 180;
-const TICK_FLOOR_MS = 80;
-const TICK_DELTA_MS = 4;
+const BASE_TICK_MS = 270; // 50% slower (was 180)
+const TICK_FLOOR_MS = 120; // 50% slower (was 80)
+const TICK_DELTA_MS = 6; // 50% slower progression (was 4)
 
 // Initial snake length (2-3 segments for classic Snake feel)
 const INITIAL_SNAKE_LENGTH = 3;
