@@ -185,9 +185,11 @@ export const useGameLoop = (
         let newSnake: Position[];
         
         if (ateApple) {
+          console.log("🍎 APPLE EATEN! Snake length before:", snake.length);
           // Apple eaten: DO NOT remove tail (snake grows by 1 segment)
           // Prepend new head to snake body - this increases length
           newSnake = [newHead, ...snake];
+          console.log("🍎 Snake length after:", newSnake.length);
           
           // Increase score by 1
           const newScore = score + 1;
