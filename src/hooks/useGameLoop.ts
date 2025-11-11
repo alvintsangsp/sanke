@@ -20,12 +20,19 @@ export const useGameLoop = (
   dimensions: { width: number; height: number }
 ) => {
   const [direction, setDirection] = useState<Direction>("RIGHT");
-  const [snake, setSnake] = useState<Position[]>([]);
-  const [apple, setApple] = useState<Position>({ x: 0, y: 0 });
   const [score, setScore] = useState(0);
+  
+  // Use refs for game state to avoid stale closures
+  const snakeRef = useRef<Position[]>([]);
+  const appleRef = useRef<Position>({ x: 0, y: 0 });
+  const directionRef = useRef<Direction>("RIGHT");
   const lastUpdateRef = useRef<number>(0);
   const animationFrameRef = useRef<number>();
   const inputBufferRef = useRef<Direction[]>([]);
+  
+  // Keep state for rendering
+  const [snake, setSnake] = useState<Position[]>([]);
+  const [apple, setApple] = useState<Position>({ x: 0, y: 0 });
 
   const cellSize = dimensions.width / GRID_SIZE;
 
@@ -112,6 +119,9 @@ export const useGameLoop = (
   useEffect(() => {
     if (gameState === "playing") {
       const initialState = initializeGame();
+      directionRef.current = initialState.direction;
+      snakeRef.current = initialState.snake;
+      appleRef.current = initialState.apple;
       setDirection(initialState.direction);
       setSnake(initialState.snake);
       setApple(initialState.apple);
@@ -124,7 +134,7 @@ export const useGameLoop = (
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || gameState !== "playing" || isPaused || dimensions.width === 0 || snake.length === 0) return;
+    if (!canvas || gameState !== "playing" || isPaused || dimensions.width === 0) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -137,15 +147,15 @@ export const useGameLoop = (
 
         // === STEP 1: Get player input (direction) ===
         // Process input buffer with 180-degree turn prevention
-        let nextDirection = direction;
+        let nextDirection = directionRef.current;
         if (inputBufferRef.current.length > 0) {
           const bufferedDirection = inputBufferRef.current.shift()!;
           // Prevent 180-degree turns (direct reversal)
           const isOpposite = 
-            (direction === "UP" && bufferedDirection === "DOWN") ||
-            (direction === "DOWN" && bufferedDirection === "UP") ||
-            (direction === "LEFT" && bufferedDirection === "RIGHT") ||
-            (direction === "RIGHT" && bufferedDirection === "LEFT");
+            (directionRef.current === "UP" && bufferedDirection === "DOWN") ||
+            (directionRef.current === "DOWN" && bufferedDirection === "UP") ||
+            (directionRef.current === "LEFT" && bufferedDirection === "RIGHT") ||
+            (directionRef.current === "RIGHT" && bufferedDirection === "LEFT");
           
           if (!isOpposite) {
             nextDirection = bufferedDirection;
@@ -153,7 +163,7 @@ export const useGameLoop = (
         }
         
         // === STEP 2: Move snake's head one cell forward in current direction ===
-        const currentHead = snake[0];
+        const currentHead = snakeRef.current[0];
         let newHead: Position;
 
         switch (nextDirection) {
@@ -173,22 +183,22 @@ export const useGameLoop = (
 
         // === STEP 3: Check for collision BEFORE updating snake ===
         // If collision detected, end game immediately
-        if (checkCollision(newHead, snake)) {
+        if (checkCollision(newHead, snakeRef.current)) {
           onGameOver();
           return; // Exit game loop
         }
 
         // === STEP 4: Check if snake's head enters a cell with the apple ===
-        const ateApple = newHead.x === apple.x && newHead.y === apple.y;
+        const ateApple = newHead.x === appleRef.current.x && newHead.y === appleRef.current.y;
 
         // === STEP 5: Update snake based on whether apple was eaten ===
         let newSnake: Position[];
         
         if (ateApple) {
-          console.log("🍎 APPLE EATEN! Snake length before:", snake.length);
+          console.log("🍎 APPLE EATEN! Snake length before:", snakeRef.current.length);
           // Apple eaten: DO NOT remove tail (snake grows by 1 segment)
           // Prepend new head to snake body - this increases length
-          newSnake = [newHead, ...snake];
+          newSnake = [newHead, ...snakeRef.current];
           console.log("🍎 Snake length after:", newSnake.length);
           
           // Increase score by 1
@@ -198,15 +208,18 @@ export const useGameLoop = (
           
           // Move apple to a new random empty cell (not occupied by snake)
           const newApple = spawnApple(newSnake);
+          appleRef.current = newApple;
           setApple(newApple);
         } else {
           // No apple eaten: remove tail segment (snake does not grow)
           // Prepend new head and remove tail to maintain same length
-          newSnake = [newHead, ...snake];
+          newSnake = [newHead, ...snakeRef.current];
           newSnake.pop(); // Remove tail to keep same length
         }
 
         // === STEP 6: Update game state and continue game loop ===
+        snakeRef.current = newSnake;
+        directionRef.current = nextDirection;
         setSnake(newSnake);
         setDirection(nextDirection);
       }
@@ -231,7 +244,7 @@ export const useGameLoop = (
 
       // Draw snake
       ctx.fillStyle = "#00ff41";
-      snake.forEach((segment, index) => {
+      snakeRef.current.forEach((segment, index) => {
         const padding = index === 0 ? 1 : 2;
         ctx.fillRect(
           segment.x * cellSize + padding,
@@ -246,8 +259,8 @@ export const useGameLoop = (
       ctx.beginPath();
       const appleRadius = Math.max(2, cellSize / 2 - 2);
       ctx.arc(
-        apple.x * cellSize + cellSize / 2,
-        apple.y * cellSize + cellSize / 2,
+        appleRef.current.x * cellSize + cellSize / 2,
+        appleRef.current.y * cellSize + cellSize / 2,
         appleRadius,
         0,
         Math.PI * 2
@@ -268,9 +281,6 @@ export const useGameLoop = (
     canvasRef,
     gameState,
     isPaused,
-    snake,
-    apple,
-    direction,
     score,
     onGameOver,
     onScoreUpdate,
