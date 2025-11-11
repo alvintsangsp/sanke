@@ -11,7 +11,7 @@ const HomeScreen = ({ onStart }: HomeScreenProps) => {
   const [showHelp, setShowHelp] = useState(false);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-6 py-12">
+    <div className="flex flex-col items-center justify-between h-full px-6 py-12">
       <div className="text-center space-y-8 max-w-md">
         <div className="space-y-4">
           <h1 className="font-pixel text-3xl sm:text-4xl text-primary animate-pulse">
@@ -53,6 +53,14 @@ const HomeScreen = ({ onStart }: HomeScreenProps) => {
           </div>
         </div>
       </div>
+
+      <footer className="text-center text-xs text-muted-foreground space-y-1">
+        <p>
+          Feedback：<a href="mailto:cs@bitebite.app" className="hover:text-primary transition-colors">cs@bitebite.app</a>
+        </p>
+        <p>Produced by Merlin Advisory Solution</p>
+        <p>© 2025 版權所有</p>
+      </footer>
 
       <HowToPlayModal open={showHelp} onClose={() => setShowHelp(false)} />
     </div>
