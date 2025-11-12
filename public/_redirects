@@ -1,0 +1,6 @@
+# Redirect source files to 404
+/src/* /404 404
+
+# Handle client-side routing
+/* /index.html 200
+
