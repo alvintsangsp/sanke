@@ -1,0 +1,47 @@
+<IfModule mod_mime.c>
+  # JavaScript files
+  AddType application/javascript .js
+  AddType application/javascript .mjs
+  AddType text/javascript .js
+  
+  # CSS files
+  AddType text/css .css
+  
+  # WebAssembly
+  AddType application/wasm .wasm
+  
+  # JSON files
+  AddType application/json .json
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Set proper MIME types
+  <FilesMatch "\.(js|mjs)$">
+    Header set Content-Type "application/javascript; charset=utf-8"
+  </FilesMatch>
+  
+  <FilesMatch "\.css$">
+    Header set Content-Type "text/css; charset=utf-8"
+  </FilesMatch>
+  
+  <FilesMatch "\.wasm$">
+    Header set Content-Type "application/wasm"
+  </FilesMatch>
+</IfModule>
+
+# Enable CORS for assets
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|mjs|css|wasm|json|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico)$">
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+</IfModule>
+
+# Handle client-side routing
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
