@@ -31,27 +31,27 @@ const GameCanvas = ({ gameState, onGameOver, isPaused, onScoreUpdate }: GameCanv
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       
-      // Reserve space for UI elements:
-      // - HUD at top: ~72px (GameUI) + ~16px padding = ~88px
-      // - Controls at bottom: ~160px (buttons + hint) + ~24px padding = ~184px
-      // - Additional margin: ~16px
-      const hudHeight = 88;
-      const controlsHeight = 184;
-      const extraMargin = 16;
+      // Reserve space for UI elements (minimized for mobile):
+      // - HUD at top: ~44px (compact GameUI) + ~8px padding = ~52px
+      // - Controls at bottom: ~140px (larger buttons, no hint on mobile) + ~16px padding = ~156px
+      // - Additional margin: ~8px
+      const hudHeight = 52;
+      const controlsHeight = 156;
+      const extraMargin = 8;
       const reservedHeight = hudHeight + controlsHeight + extraMargin;
       
-      // Calculate available space
+      // Calculate available space - maximize game board
       const availableHeight = Math.max(200, viewportHeight - reservedHeight);
-      // For mobile (320px-430px width), limit max width to prevent oversized grid
-      const maxGridWidth = viewportWidth <= 430 ? Math.min(viewportWidth - 32, 380) : 400;
+      // For mobile, use more of the width
+      const maxGridWidth = viewportWidth <= 430 ? Math.min(viewportWidth - 24, 420) : 480;
       const availableWidth = Math.min(maxGridWidth, availableHeight);
       
-      // Ensure minimum size for playability, but don't exceed available space
-      const minSize = 280;
+      // Ensure minimum size for playability, but maximize available space
+      const minSize = 300;
       const calculatedSize = Math.max(minSize, Math.min(availableWidth, availableHeight));
       
       // For very small screens, ensure grid doesn't overflow
-      const finalSize = Math.min(calculatedSize, viewportWidth - 32);
+      const finalSize = Math.min(calculatedSize, viewportWidth - 24);
       
       setDimensions({ width: finalSize, height: finalSize });
     };
@@ -82,13 +82,13 @@ const GameCanvas = ({ gameState, onGameOver, isPaused, onScoreUpdate }: GameCanv
       ref={containerRef}
       className="flex flex-col items-center justify-start h-full w-full overflow-hidden"
     >
-      {/* Game Grid - Positioned at top with proper spacing from HUD */}
-      <div className="flex-shrink-0 pt-4 sm:pt-6 px-4 pb-4">
+      {/* Game Grid - Maximized space, minimal padding */}
+      <div className="flex-shrink-0 pt-2 sm:pt-4 px-3 pb-2">
         <canvas
           ref={canvasRef}
           width={dimensions.width}
           height={dimensions.height}
-          className="border-4 border-primary rounded-lg shadow-2xl block mx-auto"
+          className="border-[3px] border-primary rounded-lg shadow-2xl block mx-auto"
           style={{
             imageRendering: "pixelated",
             touchAction: "none",
@@ -96,8 +96,8 @@ const GameCanvas = ({ gameState, onGameOver, isPaused, onScoreUpdate }: GameCanv
         />
       </div>
       
-      {/* Control Buttons - Positioned below grid with clear separation and safe area */}
-      <div className="flex-shrink-0 w-full px-4 pt-2 pb-4 sm:pb-6 safe-area-inset-bottom">
+      {/* Control Buttons - Compact spacing with safe area */}
+      <div className="flex-shrink-0 w-full px-3 pt-1 pb-3 sm:pb-4 safe-area-inset-bottom">
         <ControlButtons onDirectionChange={setDirection} />
       </div>
     </div>

@@ -21,15 +21,15 @@ const ControlButtons = ({ onDirectionChange }: ControlButtonsProps) => {
   };
 
   const buttonClass = (direction: string) => {
-    const baseClass = "min-w-[56px] min-h-[56px] w-14 h-14 sm:w-16 sm:h-16 bg-primary hover:bg-primary/90 border-2 border-primary-foreground/30 hover:border-primary-foreground/50 shadow-lg active:scale-90 transition-all duration-100 touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background";
+    const baseClass = "min-w-[64px] min-h-[64px] w-16 h-16 sm:w-20 sm:h-20 bg-primary hover:bg-primary/90 border-2 border-primary-foreground/30 hover:border-primary-foreground/50 shadow-lg active:scale-90 transition-all duration-100 touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background";
     const activeClass = activeButton === direction ? "bg-primary scale-95 shadow-xl ring-4 ring-primary/70 border-primary-foreground" : "";
     return `${baseClass} ${activeClass}`;
   };
 
   return (
-    <div className="w-full max-w-xs mx-auto">
+    <div className="w-full max-w-sm mx-auto">
       {/* D-pad style layout with proper spacing */}
-      <div className="flex flex-col items-center gap-2 sm:gap-3">
+      <div className="flex flex-col items-center gap-1.5 sm:gap-2">
         {/* Up arrow - centered above */}
         <div className="flex justify-center">
           <Button
@@ -39,12 +39,12 @@ const ControlButtons = ({ onDirectionChange }: ControlButtonsProps) => {
             aria-label="Move up"
             type="button"
           >
-            <ArrowUp className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" strokeWidth={3} />
+            <ArrowUp className="w-7 h-7 sm:w-8 sm:h-8 text-primary-foreground" strokeWidth={3} />
           </Button>
         </div>
         
         {/* Middle row: Left, Down, Right with proper spacing */}
-        <div className="flex items-center justify-center gap-3 sm:gap-4">
+        <div className="flex items-center justify-center gap-2 sm:gap-3">
           <Button
             onClick={(e) => handleDirection("LEFT", e)}
             onTouchStart={(e) => handleDirection("LEFT", e)}
@@ -52,7 +52,7 @@ const ControlButtons = ({ onDirectionChange }: ControlButtonsProps) => {
             aria-label="Move left"
             type="button"
           >
-            <ArrowLeft className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" strokeWidth={3} />
+            <ArrowLeft className="w-7 h-7 sm:w-8 sm:h-8 text-primary-foreground" strokeWidth={3} />
           </Button>
           
           <Button
@@ -62,7 +62,7 @@ const ControlButtons = ({ onDirectionChange }: ControlButtonsProps) => {
             aria-label="Move down"
             type="button"
           >
-            <ArrowDown className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" strokeWidth={3} />
+            <ArrowDown className="w-7 h-7 sm:w-8 sm:h-8 text-primary-foreground" strokeWidth={3} />
           </Button>
           
           <Button
@@ -72,13 +72,13 @@ const ControlButtons = ({ onDirectionChange }: ControlButtonsProps) => {
             aria-label="Move right"
             type="button"
           >
-            <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" strokeWidth={3} />
+            <ArrowRight className="w-7 h-7 sm:w-8 sm:h-8 text-primary-foreground" strokeWidth={3} />
           </Button>
         </div>
       </div>
       
-      {/* Swipe hint text - smaller and less prominent */}
-      <p className="text-center mt-3 sm:mt-4 text-[10px] sm:text-xs text-muted-foreground/70 font-pixel">
+      {/* Swipe hint text - hidden to save space */}
+      <p className="text-center mt-2 text-[9px] text-muted-foreground/60 font-pixel hidden sm:block">
         Swipe or tap to move
       </p>
     </div>
