@@ -6,11 +6,9 @@
   Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=31536000, immutable
 
-/*.ts
+/assets/*.js
   Content-Type: application/javascript; charset=utf-8
-
-/*.tsx
-  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
 
 /*.css
   Content-Type: text/css; charset=utf-8
