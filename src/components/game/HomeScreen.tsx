@@ -22,6 +22,15 @@ const HomeScreen = ({ onStart }: HomeScreenProps) => {
 
       <div className="text-center space-y-8 max-w-md">
         <div className="space-y-4">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/logo.svg" 
+              alt="Bitebite Snake Logo" 
+              className="w-32 h-32 sm:w-40 sm:h-40 animate-pulse"
+            />
+          </div>
+          
           <h1 className="font-pixel text-3xl sm:text-4xl text-primary animate-pulse">
             {t("gameTitle")}
           </h1>
