@@ -21,13 +21,20 @@ const HomeScreen = ({ onStart }: HomeScreenProps) => {
       </div>
 
       <div className="text-center space-y-8 max-w-md">
-        <div className="space-y-4">
-          <h1 className="font-pixel text-3xl sm:text-4xl text-primary animate-pulse">
-            {t("gameTitle")}
-          </h1>
-          <h2 className="font-pixel text-xl sm:text-2xl text-secondary">
-            {t("gameSubtitle")}
-          </h2>
+        <div className="flex flex-col items-center space-y-4">
+          <img
+            src="/logo.svg"
+            alt={t("gameTitle")}
+            className="w-32 h-32 sm:w-40 sm:h-40 drop-shadow-[0_0_18px_rgba(36,255,109,0.35)]"
+          />
+          <div className="space-y-3">
+            <h1 className="font-pixel text-3xl sm:text-4xl text-primary animate-pulse">
+              {t("gameTitle")}
+            </h1>
+            <h2 className="font-pixel text-xl sm:text-2xl text-secondary">
+              {t("gameSubtitle")}
+            </h2>
+          </div>
         </div>
 
         <div className="space-y-3 w-full">
